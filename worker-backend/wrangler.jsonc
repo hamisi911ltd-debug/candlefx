@@ -1,0 +1,15 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "candle-fx-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-26",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "crypto-bot-platform-db",
+      "database_id": "ce4dab72-d45e-4319-8fd4-6b23a5fb7aaf"
+    }
+  ]
+}
