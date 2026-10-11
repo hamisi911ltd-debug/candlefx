@@ -9,36 +9,38 @@ import {
   type ISeriesApi,
   type UTCTimestamp,
 } from "lightweight-charts";
+import { priceDecimals } from "@/lib/markets";
 
 type Bar = { timestamp: string; open: number; high: number; low: number; close: number; volume: number };
 
-export default function PriceChart({ bars }: { bars: Bar[] }) {
+export default function PriceChart({ bars, fitKey }: { bars: Bar[]; fitKey: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
-  const hasFitOnceRef = useRef(false);
+  const fitKeyRef = useRef<string | null>(null);
 
-  // Create the chart once. Recreating it on every data update (the previous bug
-  // here) resets zoom/scroll/crosshair state each time, which is what looked like
-  // the whole screen "shifting" whenever new candles arrived.
+  // Create the chart once. Recreating it on every data update resets zoom/scroll/crosshair
+  // state each time, which is what looked like the whole screen "shifting".
   useEffect(() => {
     if (!containerRef.current) return;
 
     const chart = createChart(containerRef.current, {
-      layout: { background: { type: ColorType.Solid, color: "#0b0f14" }, textColor: "#94a3b8" },
-      grid: { vertLines: { color: "#1e293b" }, horzLines: { color: "#1e293b" } },
+      layout: { background: { type: ColorType.Solid, color: "#ffffff" }, textColor: "#475569", fontFamily: "inherit" },
+      grid: { vertLines: { color: "#f1f5f9" }, horzLines: { color: "#f1f5f9" } },
       width: containerRef.current.clientWidth,
-      height: 360,
-      timeScale: { timeVisible: true, secondsVisible: true },
+      height: 420,
+      timeScale: { borderColor: "#e2e8f0", timeVisible: true, secondsVisible: true, rightOffset: 4 },
+      rightPriceScale: { borderColor: "#e2e8f0", scaleMargins: { top: 0.12, bottom: 0.12 } },
+      crosshair: { mode: 0, vertLine: { color: "#94a3b8", labelBackgroundColor: "#334155" }, horzLine: { color: "#94a3b8", labelBackgroundColor: "#334155" } },
     });
     chartRef.current = chart;
 
     seriesRef.current = chart.addSeries(CandlestickSeries, {
-      upColor: "#10b981",
-      downColor: "#ef4444",
+      upColor: "#059669",
+      downColor: "#dc2626",
       borderVisible: false,
-      wickUpColor: "#10b981",
-      wickDownColor: "#ef4444",
+      wickUpColor: "#059669",
+      wickDownColor: "#dc2626",
     });
 
     const onResize = () => {
@@ -54,13 +56,11 @@ export default function PriceChart({ bars }: { bars: Bar[] }) {
     };
   }, []);
 
-  // Just feed new data into the existing chart/series - no teardown, no scroll reset.
+  // Feed new data into the existing chart/series - no teardown, no scroll reset.
   useEffect(() => {
     if (!seriesRef.current) return;
 
-    // Defensive: lightweight-charts requires strictly ascending, deduplicated
-    // timestamps. Sort and drop duplicates here rather than trusting every caller
-    // to hand back a perfectly clean, monotonic array.
+    // lightweight-charts requires strictly ascending, deduplicated timestamps.
     const seen = new Set<number>();
     const sorted = [...bars]
       .map((b) => ({
@@ -77,14 +77,19 @@ export default function PriceChart({ bars }: { bars: Bar[] }) {
         return true;
       });
 
-    seriesRef.current.setData(sorted);
-    // Only auto-fit the view the first time data arrives - repeating this on every
-    // poll would fight the user's own zoom/pan and look like the chart "jumping".
-    if (!hasFitOnceRef.current && sorted.length > 0) {
-      chartRef.current?.timeScale().fitContent();
-      hasFitOnceRef.current = true;
+    if (sorted.length > 0) {
+      const d = priceDecimals(sorted[sorted.length - 1].close);
+      seriesRef.current.applyOptions({ priceFormat: { type: "price", precision: d, minMove: Math.pow(10, -d) } });
     }
-  }, [bars]);
+    seriesRef.current.setData(sorted);
+
+    // Re-fit only when the market or scale changes - refitting on every poll would fight
+    // the user's own zoom/pan and look like the chart "jumping".
+    if (sorted.length > 0 && fitKeyRef.current !== fitKey) {
+      chartRef.current?.timeScale().fitContent();
+      fitKeyRef.current = fitKey;
+    }
+  }, [bars, fitKey]);
 
   return <div ref={containerRef} className="w-full" />;
 }

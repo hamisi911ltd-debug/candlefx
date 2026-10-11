@@ -1,0 +1,25 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "candle-fx-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "observability": { "enabled": true },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "crypto-bot-platform-db",
+      "database_id": "ce4dab72-d45e-4319-8fd4-6b23a5fb7aaf",
+      "migrations_dir": "../backend/d1_migrations"
+    }
+  ],
+  "triggers": { "crons": ["* * * * *"] },
+  "vars": {
+    "CORS_ORIGINS": "https://candle-fx.pages.dev,http://localhost:3000",
+    "ACCESS_TOKEN_EXPIRE_MINUTES": "15",
+    "PAYHERO_CHANNEL_ID": "9888",
+    "REFRESH_TOKEN_EXPIRE_DAYS": "30",
+    "PAYHERO_CALLBACK_BASE_URL": "https://candle-fx-api.glotech.workers.dev"
+  }
+}

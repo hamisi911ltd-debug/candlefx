@@ -6,6 +6,20 @@ from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
 class UserRegister(BaseModel):
     email: EmailStr
     password: str
+    phone_number: str | None = None
+
+    @field_validator("phone_number")
+    @classmethod
+    def phone_looks_valid(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        v = v.strip()
+        if not v:
+            return None
+        digits = v.replace("+", "")
+        if not digits.isdigit() or len(digits) < 9:
+            raise ValueError("phone_number must be a valid M-Pesa number, e.g. 0712345678")
+        return v
 
     @field_validator("password")
     @classmethod
@@ -31,6 +45,7 @@ class UserOut(BaseModel):
     email: EmailStr
     is_active: bool
     trading_paused: bool
+    phone_number: str | None = None
 
 
 class TokenPair(BaseModel):

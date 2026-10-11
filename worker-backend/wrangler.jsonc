@@ -11,5 +11,10 @@
       "database_name": "crypto-bot-platform-db",
       "database_id": "ce4dab72-d45e-4319-8fd4-6b23a5fb7aaf"
     }
-  ]
+  ],
+  "vars": {
+    "CORS_ORIGINS": "https://candle-fx.pages.dev,http://localhost:3000",
+    "PAYHERO_ACCOUNT_ID": "10360",
+    "PAYHERO_CHANNEL_ID": "9888"
+  }
 }

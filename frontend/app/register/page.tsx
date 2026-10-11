@@ -4,11 +4,14 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 import { ApiError } from "@/lib/api";
+import AuthShell from "@/components/AuthShell";
+import { alertError, btnPrimary, card, input, label } from "@/lib/ui";
 
 export default function RegisterPage() {
   const { register } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -17,7 +20,7 @@ export default function RegisterPage() {
     setError(null);
     setSubmitting(true);
     try {
-      await register(email, password);
+      await register(email, password, phone);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Registration failed");
     } finally {
@@ -26,49 +29,67 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-slate-950 to-black px-4">
-      <form onSubmit={onSubmit} className="w-full max-w-sm space-y-4 rounded-xl border border-slate-800 bg-slate-900/60 p-6 shadow-xl shadow-black/20">
-        <div className="mb-2 flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-sky-600 text-sm font-bold">FX</span>
-          <h1 className="text-xl font-semibold">Create your account</h1>
-        </div>
-        {error && <p className="rounded bg-red-950/60 p-2 text-sm text-red-300">{error}</p>}
+    <AuthShell
+      headline="Trade candle predictions across global markets."
+      sub="Call the next candle up or down on live crypto and simulated city markets. Practice free, or play with real M-Pesa money."
+    >
+      <form onSubmit={onSubmit} className={`${card} space-y-5 p-7`}>
         <div>
-          <label className="mb-1 block text-sm text-slate-400">Email</label>
+          <h1 className="text-2xl font-bold text-slate-900">Create your account</h1>
+          <p className="mt-1 text-sm text-slate-500">Includes a free 100-point practice wallet.</p>
+        </div>
+        {error && <p className={alertError}>{error}</p>}
+        <div>
+          <label className={label} htmlFor="email">Email</label>
           <input
+            id="email"
             type="email"
             required
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
+            placeholder="you@example.com"
+            className={input}
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm text-slate-400">Password</label>
+          <label className={label} htmlFor="phone">
+            M-Pesa phone <span className="font-normal text-slate-400">(optional, for deposits)</span>
+          </label>
           <input
+            id="phone"
+            type="tel"
+            autoComplete="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="0712345678"
+            className={input}
+          />
+        </div>
+        <div>
+          <label className={label} htmlFor="password">Password</label>
+          <input
+            id="password"
             type="password"
             required
             minLength={10}
+            autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
+            className={input}
           />
-          <p className="mt-1 text-xs text-slate-500">At least 10 characters, with a letter and a digit.</p>
+          <p className="mt-1.5 text-xs text-slate-500">At least 10 characters, with a letter and a digit.</p>
         </div>
-        <p className="rounded-lg border border-amber-700/50 bg-amber-950/40 p-3 text-xs text-amber-200">
-          Your own private wallet on Candle FX uses virtual points only - no real money is involved.
-        </p>
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full rounded-md bg-emerald-600 py-2 text-sm font-medium hover:bg-emerald-500 disabled:opacity-50"
-        >
+        <button type="submit" disabled={submitting} className={`${btnPrimary} w-full py-2.5`}>
           {submitting ? "Creating account..." : "Create account"}
         </button>
         <p className="text-center text-sm text-slate-500">
-          Already have an account? <Link href="/login" className="text-emerald-400 hover:underline">Log in</Link>
+          Already have an account?{" "}
+          <Link href="/login" className="font-semibold text-emerald-600 hover:text-emerald-700 hover:underline">
+            Log in
+          </Link>
         </p>
       </form>
-    </main>
+    </AuthShell>
   );
 }

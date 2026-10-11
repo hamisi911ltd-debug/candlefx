@@ -21,7 +21,7 @@ def get_user_by_id(db: D1Client, user_id: str) -> User | None:
     return User.from_row(rows[0]) if rows else None
 
 
-def register_user(db: D1Client, email: str, password: str) -> User:
+def register_user(db: D1Client, email: str, password: str, phone_number: str | None = None) -> User:
     user = User(
         id=str(uuid.uuid4()),
         email=email,
@@ -29,6 +29,7 @@ def register_user(db: D1Client, email: str, password: str) -> User:
         is_active=True,
         trading_paused=False,
         created_at=datetime.now(timezone.utc).isoformat(),
+        phone_number=phone_number,
     )
     # No pre-check SELECT for an existing email: that would cost a second sequential
     # D1 round trip on every registration just to handle the rare duplicate case.
@@ -36,9 +37,10 @@ def register_user(db: D1Client, email: str, password: str) -> User:
     # translating that specific failure into a clean AuthError.
     try:
         db.execute(
-            "INSERT INTO users (id, email, hashed_password, is_active, trading_paused, created_at) "
+            "INSERT INTO users (id, email, hashed_password, is_active, trading_paused, created_at, phone_number) "
             f"VALUES ({sql_quote(user.id)}, {sql_quote(user.email)}, {sql_quote(user.hashed_password)}, "
-            f"{sql_quote(user.is_active)}, {sql_quote(user.trading_paused)}, {sql_quote(user.created_at)})"
+            f"{sql_quote(user.is_active)}, {sql_quote(user.trading_paused)}, {sql_quote(user.created_at)}, "
+            f"{sql_quote(user.phone_number)})"
         )
     except D1Error as exc:
         if "UNIQUE constraint failed: users.email" in str(exc):

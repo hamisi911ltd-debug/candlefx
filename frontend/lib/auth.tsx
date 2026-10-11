@@ -9,14 +9,16 @@ type User = {
   email: string;
   is_active: boolean;
   trading_paused: boolean;
+  phone_number?: string | null;
 };
 
 type AuthContextValue = {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, phoneNumber?: string) => Promise<void>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -45,17 +47,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     setTokens(tokens.access_token, tokens.refresh_token);
     setUser(tokens.user);
-    router.push("/dashboard");
+    router.push("/trade");
   };
 
-  const register = async (email: string, password: string) => {
+  const register = async (email: string, password: string, phoneNumber?: string) => {
     const tokens = await apiFetch("/api/auth/register", {
       method: "POST",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, phone_number: phoneNumber || undefined }),
     });
     setTokens(tokens.access_token, tokens.refresh_token);
     setUser(tokens.user);
-    router.push("/dashboard");
+    router.push("/trade");
+  };
+
+  const refreshUser = async () => {
+    setUser(await apiFetch("/api/auth/me"));
   };
 
   const logout = () => {
@@ -65,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

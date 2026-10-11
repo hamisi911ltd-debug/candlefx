@@ -16,12 +16,21 @@ export interface SymbolProfile {
   basePrice: number;
   driftScale: number;
   volatility: number;
+  label: string;
 }
 
+// Each "city" is an independent synthetic market (its own seed space, its own
+// volatility personality) - not tied to any real exchange or real city data,
+// just a themed way to offer several markets to trade at once.
 export const SYMBOL_PROFILES: Record<string, SymbolProfile> = {
-  "SIM-CALM": { basePrice: 100.0, driftScale: 0.0015, volatility: 0.004 },
-  "SIM-STEADY": { basePrice: 250.0, driftScale: 0.0025, volatility: 0.007 },
-  "SIM-WILD": { basePrice: 50.0, driftScale: 0.004, volatility: 0.014 },
+  NAIROBI: { basePrice: 120.0, driftScale: 0.0018, volatility: 0.005, label: "Nairobi" },
+  LONDON: { basePrice: 340.0, driftScale: 0.0016, volatility: 0.0045, label: "London" },
+  NEWYORK: { basePrice: 410.0, driftScale: 0.0022, volatility: 0.0065, label: "New York" },
+  TOKYO: { basePrice: 275.0, driftScale: 0.002, volatility: 0.006, label: "Tokyo" },
+  DUBAI: { basePrice: 190.0, driftScale: 0.0028, volatility: 0.008, label: "Dubai" },
+  HONGKONG: { basePrice: 305.0, driftScale: 0.003, volatility: 0.009, label: "Hong Kong" },
+  SINGAPORE: { basePrice: 230.0, driftScale: 0.0019, volatility: 0.0055, label: "Singapore" },
+  JOHANNESBURG: { basePrice: 95.0, driftScale: 0.0035, volatility: 0.011, label: "Johannesburg" },
 };
 
 export interface Candle {

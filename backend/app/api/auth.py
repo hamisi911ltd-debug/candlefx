@@ -36,7 +36,7 @@ def _tokens_for(user: User) -> TokenPair:
 @limiter.limit("5/minute")
 def register(request: Request, payload: UserRegister, db: D1Client = Depends(get_db)) -> TokenPair:
     try:
-        user = register_user(db, payload.email, payload.password)
+        user = register_user(db, payload.email, payload.password, payload.phone_number)
     except AuthError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
     return _tokens_for(user)
